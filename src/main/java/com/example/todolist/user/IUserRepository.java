@@ -1,4 +1,4 @@
-package com.example.todolist.controller;
+package com.example.todolist.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
