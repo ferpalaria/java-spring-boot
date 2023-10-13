@@ -1,5 +1,6 @@
 package com.example.todolist.task;
 
+import com.example.todolist.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class TaskController {
     @PostMapping("/")
     public ResponseEntity create(@RequestBody TaskModel taskModel, HttpServletRequest request) {
         var user_id = request.getAttribute("user_id");
-        taskModel.setUserID((UUID) user_id);
+        taskModel.setUserId((UUID) user_id);
 
         var currentDate = LocalDateTime.now();
         if (currentDate.isAfter(taskModel.getStartAt()) || currentDate.isAfter(taskModel.getEndAt())) {
@@ -34,21 +35,18 @@ public class TaskController {
     @GetMapping("/")
     public List<TaskModel> list(HttpServletRequest request) {
         var user_id = request.getAttribute("user_id");
-        var tasks = this.taskRepository.findByIdUser((UUID) user_id);
+        var tasks = this.taskRepository.findByUserId((UUID) user_id);
         return tasks;
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
-        var user_id = request.getAttribute("user_id");
+    public TaskModel update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
 
-        var task = this.taskRepository.findById(id);
+        var task = this.taskRepository.findById(id).orElse(null);
 
-        taskModel.setUserID((UUID) user_id);
-        taskModel.setId(id);
-        this.taskRepository.save(taskModel);
+        Utils.copyNonNullProperties(taskModel, task);
 
-
+        return this.taskRepository.save(taskModel);
     }
 
 }
