@@ -40,13 +40,24 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public TaskModel update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
-
+    @ResponseStatus(value = HttpStatus.OK)
+    public ResponseEntity update(@RequestBody TaskModel taskModel,
+                                 HttpServletRequest request,
+                                 @PathVariable UUID id) {
+        var userId = request.getAttribute("user_id");
         var task = this.taskRepository.findById(id).orElse(null);
 
+        if (task == null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Tarefa não encontrada");
+        }
+        if (!task.getUserId().equals(userId)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User sem permissão");
+        }
         Utils.copyNonNullProperties(taskModel, task);
 
-        return this.taskRepository.save(taskModel);
+        var taskUpdated = this.taskRepository.save(taskModel);
+        return ResponseEntity.ok().body(taskUpdated);
     }
 
 }
